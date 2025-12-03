@@ -1,7 +1,6 @@
-// src/app/page.tsx
-import { fetchAPI } from "../services/api"; // Verifique se o caminho está correto para sua pasta
+// src/app/page.tsx - NÃO MUDAR, já está bom
+import { fetchAPI } from "../services/api";
 
-// Interface para tipar os dados (opcional, mas ajuda o VSCode)
 interface TesteItem {
   id: number;
   attributes?: {
@@ -9,7 +8,7 @@ interface TesteItem {
     descricao: string;
     slug: string;
   };
-  titulo?: string; // Fallback para Strapi v5 sem 'attributes'
+  titulo?: string;
   descricao?: string;
 }
 
@@ -18,27 +17,19 @@ export default async function Page() {
   let errorMsg: string | null = null;
 
   try {
-    // 1. Busca os dados na rota '/testes'
     const response = await fetchAPI("/testes");
-
-    // LOG: Veja isso no terminal onde está rodando o 'npm run dev' do frontend
     console.log("DADOS RECEBIDOS:", JSON.stringify(response, null, 2));
 
-    // 2. Verifica se tem dados
     if (response.data && response.data.length > 0) {
       const item = response.data[0];
-
-      // Lógica para pegar o título (suporta Strapi v4 com 'attributes' e v5 simplificado)
       if (item.attributes) {
         titulo = item.attributes.titulo;
       } else if (item.titulo) {
         titulo = item.titulo;
       }
     } else {
-      // Se o array data estiver vazio []
-      errorMsg = "API conectada, mas nenhum conteúdo encontrado. Verifique se você criou e PUBLICOU o item no Strapi.";
+      errorMsg = "API conectada, mas nenhum conteúdo encontrado.";
     }
-
   } catch (err) {
     errorMsg = "Erro ao conectar com o Strapi. Verifique se ele está rodando.";
   }
@@ -47,28 +38,42 @@ export default async function Page() {
     <main className="p-10 flex flex-col items-center justify-center min-h-screen bg-gray-50">
       <div className="bg-white p-8 rounded-lg shadow-md max-w-lg w-full text-center">
         
-        {/* Título da Seção */}
         <p className="text-sm font-bold text-gray-400 uppercase mb-4 tracking-wider">
           Status da Integração
         </p>
 
-        {/* Lógica de Exibição */}
         {titulo ? (
-          // SUCESSO
-          <h1 className="text-4xl font-extrabold text-blue-600">
-            {titulo}
-          </h1>
+          <h1 className="text-4xl font-extrabold text-blue-600">{titulo}</h1>
         ) : (
-          // FALHA OU CARREGANDO
           <div className="space-y-4">
             <h1 className="text-3xl font-bold text-red-500">
               {errorMsg ? "Atenção!" : "Carregando..."}
             </h1>
-            <p className="text-gray-600">
-              {errorMsg || "Buscando dados..."}
-            </p>
+            <p className="text-gray-600">{errorMsg || "Buscando dados..."}</p>
           </div>
         )}
+
+        {/* Links para navegação */}
+        <div className="mt-8 pt-6 border-t border-gray-100">
+          <p className="text-gray-500 text-sm mb-3">
+            Projeto de estudo para aprender deploy e monitoramento
+          </p>
+          <a 
+            href="/sobre"
+            className="inline-block text-blue-600 hover:text-blue-800 font-medium text-sm"
+          >
+            📊 Ir para página de teste →
+          </a>
+          <div className="mt-2">
+            <a 
+              href="https://vercel.com/1991lotavio-1655s-projects/gestao-capelas/analytics"
+              target="_blank"
+              className="inline-block text-green-600 hover:text-green-800 text-xs"
+            >
+              (ver analytics)
+            </a>
+          </div>
+        </div>
 
       </div>
     </main>
