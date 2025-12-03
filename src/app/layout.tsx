@@ -12,6 +12,8 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body>
         {children}
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
