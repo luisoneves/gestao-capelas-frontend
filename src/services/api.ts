@@ -1,35 +1,44 @@
-// src/services/api.ts - VERSÃO CORRIGIDA
+// src/services/api.ts - VERSÃO MELHORADA
+import { logger } from '../utils/logger';
+
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
 
 export async function fetchAPI(path: string) {
+  const url = `${STRAPI_URL}/api${path}`;
+  
   try {
-    const url = `${STRAPI_URL}/api${path}`;
+    logger.debug(`Making API request to: ${url}`);
     
     const res = await fetch(url, {
       headers: {
         "Content-Type": "application/json",
       },
-      // ⭐⭐ TROQUE cache: "no-store" POR next: { revalidate: 60 } ⭐⭐
       next: { 
-        revalidate: 60 // Revalida a cada 60 segundos (Incremental Static Regeneration)
+        revalidate: 60 // ISR: Revalida a cada 60 segundos
       }
-      // ⚠️ REMOVA: cache: "no-store"
     });
 
     if (!res.ok) {
+      logger.error(`API ${res.status}: ${url}`);
+      
       // Para produção, não quebre a página
       if (process.env.NODE_ENV === 'production') {
-        console.warn(`API ${res.status}: ${url}`);
+        logger.warn(`Returning empty data for failed API call: ${path}`);
         return { data: [] };
       }
+      
       throw new Error(`Erro na API: ${res.status} ${res.statusText}`);
     }
 
     const json = await res.json();
+    logger.debug(`API response received from: ${path}`, {
+      dataCount: json.data?.length || 0
+    });
+    
     return json;
     
-  } catch (error) {
-    console.error("FetchAPI Error:", error);
+  } catch (error: any) {
+    logger.apiError(error, path);
     
     // Em produção, retorna vazio em vez de quebrar
     if (process.env.NODE_ENV === 'production') {
