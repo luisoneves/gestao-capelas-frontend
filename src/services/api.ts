@@ -1,7 +1,14 @@
-// src/services/api.ts - VERSÃO MELHORADA
+// src/services/api.ts
 import { logger } from '../utils/logger';
 
-const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+// SISTEMA DE AMBIENTES
+const STRAPI_URL = 
+  process.env.NEXT_PUBLIC_STRAPI_URL_PRODUCTION ||
+  process.env.NEXT_PUBLIC_STRAPI_URL_LOCAL ||
+  "http://localhost:1337";
+
+logger.debug(`Strapi URL configurada: ${STRAPI_URL}`);
+logger.debug(`Ambiente: ${process.env.NODE_ENV}`);
 
 export async function fetchAPI(path: string) {
   const url = `${STRAPI_URL}/api${path}`;
@@ -14,16 +21,14 @@ export async function fetchAPI(path: string) {
         "Content-Type": "application/json",
       },
       next: { 
-        revalidate: 60 // ISR: Revalida a cada 60 segundos
+        revalidate: 60
       }
     });
 
     if (!res.ok) {
       logger.error(`API ${res.status}: ${url}`);
       
-      // Para produção, não quebre a página
       if (process.env.NODE_ENV === 'production') {
-        logger.warn(`Returning empty data for failed API call: ${path}`);
         return { data: [] };
       }
       
@@ -40,7 +45,6 @@ export async function fetchAPI(path: string) {
   } catch (error: any) {
     logger.apiError(error, path);
     
-    // Em produção, retorna vazio em vez de quebrar
     if (process.env.NODE_ENV === 'production') {
       return { data: [] };
     }
